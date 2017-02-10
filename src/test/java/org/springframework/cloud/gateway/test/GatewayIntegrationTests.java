@@ -474,6 +474,23 @@ public class GatewayIntegrationTests {
 	}
 
 	@Test
+	public void traceFilterWorks() {
+		Mono<Map> result = webClient.get()
+				.uri("/header")
+				.exchange()
+				.then(response -> response.body(toMono(Map.class)));
+
+		StepVerifier.create(result)
+				.consumeNextWith(
+						response -> {
+							Map<String, Object> headers = getMap(response, "headers");
+							System.out.println();
+						})
+				.expectComplete()
+				.verify(DURATION);
+	}
+
+	@Test
 	public void urlRouteWorks() {
 		Mono<ClientResponse> result = webClient.get()
 				.uri("/get")

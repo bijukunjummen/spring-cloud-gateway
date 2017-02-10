@@ -163,6 +163,8 @@ spring:
         predicates:
         - name: Url
           args: /**
+        filters:
+        - Trace
 
 myservice:
   ribbon:

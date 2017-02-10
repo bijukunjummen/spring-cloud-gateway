@@ -22,7 +22,7 @@ import reactor.core.publisher.Mono;
 public class RouteToRequestUrlFilter implements GlobalFilter, Ordered {
 
 	private static final Log log = LogFactory.getLog(RouteToRequestUrlFilter.class);
-	public static final int ROUTE_TO_URL_FILTER_ORDER = 10000;
+	public static final int ROUTE_TO_URL_FILTER_ORDER = -10000;
 
 	@Override
 	public int getOrder() {

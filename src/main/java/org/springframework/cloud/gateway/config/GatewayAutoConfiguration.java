@@ -16,6 +16,7 @@ import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.cloud.gateway.filter.LoadBalancerClientFilter;
 import org.springframework.cloud.gateway.filter.RouteToRequestUrlFilter;
 import org.springframework.cloud.gateway.filter.RoutingFilter;
+import org.springframework.cloud.gateway.filter.TraceFilter;
 import org.springframework.cloud.gateway.filter.WriteResponseFilter;
 import org.springframework.cloud.gateway.filter.route.AddRequestHeaderRouteFilter;
 import org.springframework.cloud.gateway.filter.route.AddRequestParameterRouteFilter;
@@ -31,6 +32,7 @@ import org.springframework.cloud.gateway.filter.route.SecureHeadersRouteFilter;
 import org.springframework.cloud.gateway.filter.route.SetPathRouteFilter;
 import org.springframework.cloud.gateway.filter.route.SetResponseHeaderRouteFilter;
 import org.springframework.cloud.gateway.filter.route.SetStatusRouteFilter;
+import org.springframework.cloud.gateway.filter.route.TraceRouteFilter;
 import org.springframework.cloud.gateway.handler.FilteringWebHandler;
 import org.springframework.cloud.gateway.handler.RoutePredicateHandlerMapping;
 import org.springframework.cloud.gateway.handler.RoutingWebHandler;
@@ -47,6 +49,12 @@ import org.springframework.cloud.gateway.handler.predicate.RoutePredicate;
 import org.springframework.cloud.gateway.handler.predicate.UrlRoutePredicate;
 import org.springframework.cloud.gateway.support.CachingRouteLocator;
 import org.springframework.cloud.gateway.support.InMemoryRouteRepository;
+import org.springframework.cloud.sleuth.SpanReporter;
+import org.springframework.cloud.sleuth.TraceKeys;
+import org.springframework.cloud.sleuth.Tracer;
+import org.springframework.cloud.sleuth.instrument.web.HttpSpanExtractor;
+import org.springframework.cloud.sleuth.instrument.web.HttpSpanInjector;
+import org.springframework.cloud.sleuth.instrument.web.HttpTraceKeysInjector;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -125,6 +133,14 @@ public class GatewayAutoConfiguration {
 	@Bean
 	public RouteToRequestUrlFilter routeToRequestUrlFilter() {
 		return new RouteToRequestUrlFilter();
+	}
+
+	//@ConditionalOnBean(Tracer.class)
+	@ConditionalOnClass(Tracer.class)
+	@Bean
+	public TraceFilter gatewayTraceFilter(Tracer tracer, TraceKeys traceKeys, SpanReporter spanReporter,
+								   HttpSpanExtractor spanExtractor, HttpTraceKeysInjector httpTraceKeysInjector) {
+		return new TraceFilter(tracer, traceKeys, spanReporter, spanExtractor, httpTraceKeysInjector);
 	}
 
 	@Bean
@@ -246,6 +262,13 @@ public class GatewayAutoConfiguration {
 	@Bean(name = "SetStatusRouteFilter")
 	public SetStatusRouteFilter setStatusRouteFilter() {
 		return new SetStatusRouteFilter();
+	}
+
+	//@ConditionalOnBean(Tracer.class)
+	@ConditionalOnClass(Tracer.class)
+	@Bean(name = "TraceRouteFilter")
+	public TraceRouteFilter traceRouteFilter(Tracer tracer, TraceKeys traceKeys, HttpSpanInjector spanInjector, HttpTraceKeysInjector httpTraceKeysInjector) {
+		return new TraceRouteFilter(tracer, traceKeys, spanInjector, httpTraceKeysInjector);
 	}
 
 	//TODO: control creation
